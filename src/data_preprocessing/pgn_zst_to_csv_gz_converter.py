@@ -121,6 +121,6 @@ class PgnZstToCsvGzConverter:
         filepath = os.path.join(self._destination_dir, f"{self._csv_file_counter}.csv.gz")
         print(f"Saving games to a file {filepath}.")
         df = pd.DataFrame(games, columns=self._headers)
-        df.to_csv(filepath, index=False, compression="infer", sep='\t')
+        df.to_csv(filepath, index=False, compression="infer")  # , sep='\t'
         self._csv_file_counter += 1
         print(f"Games saved to a file {filepath}.")
