@@ -1,6 +1,7 @@
 import io
 import os.path
 from collections import deque
+from typing import List
 import chess
 import chess.pgn
 from queue import Queue
@@ -8,11 +9,12 @@ import zstandard as zstd
 import pandas as pd
 import threading
 
+import re
+from src.data_preprocessing.custom_pgn_parser import custom_pgn_parser
 
 CHUNK_SIZE = 1024 * 1024
 CHUNKS_QUEUE_SIZE = 1024
 GAMES_QUEUE_SIZE = 1024 * 1024
-
 
 class PgnZstToCsvGzConverter:
     """Converts compressed .pgn.zst files to compressed .csv.gz files on the fly.
@@ -57,7 +59,7 @@ class PgnZstToCsvGzConverter:
                          'UTCTime',
                          'WhiteElo',
                          'WhiteRatingDiff',
-                         'Moves']
+                         'Moves']                               
 
     def convert(self):
         """Starts reading and writing threads."""
@@ -83,8 +85,12 @@ class PgnZstToCsvGzConverter:
             self._chunks_queue.put(None)
 
     @staticmethod
-    def parse_chess_game(stream):
-        return chess.pgn.read_game(stream)
+    def parse_chess_game(stream, validation=False):
+        if validation:
+            chess.pgn.read_game(stream)
+        
+        else:
+            custom_pgn_parser(stream)
 
     def _write_csv_gz(self):
         """Takes the data from the queue and writes it to the .csv.gz file."""
@@ -102,7 +108,7 @@ class PgnZstToCsvGzConverter:
                 mainline_moves = " ".join([str(move) for move in game.mainline_moves()])
                 current_games.append(game_info + [mainline_moves])
                 two_last_positions.append(stream.tell())
-                game = chess.pgn.read_game(stream)
+                game = self.parse_chess_game(stream)
             for item in current_games[:-1]:
                 self._games_queue.put(item)
             remaining_part = string[two_last_positions[0]:]
@@ -123,7 +129,7 @@ class PgnZstToCsvGzConverter:
         for i in range(int(len(games) / self._num_games_per_file) + 1):
             self._save_games_on_disk(games[i * self._num_games_per_file: (i + 1) * self._num_games_per_file])
 
-    def _save_games_on_disk(self, games: list[str]):
+    def _save_games_on_disk(self, games: List[str]):
         """Creates dataframe from the list of lists of strings and saves it to the .csv file."""
         filepath = os.path.join(self._destination_dir, f"{self._csv_file_counter}.csv.gz")
         print(f"Saving games to a file {filepath}.")
