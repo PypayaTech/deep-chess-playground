@@ -2,6 +2,7 @@ from typing import Optional
 import chess
 from src.utils.square_utilities import Square, ALL_SQUARES
 
+from typing import Dict
 
 class Move:
     """A class representing a chess move."""
@@ -89,7 +90,7 @@ class Move:
         return self.move_string != other.move_string
 
 
-def generate_all_possible_moves() -> dict[str, Move]:
+def generate_all_possible_moves() -> Dict[str, Move]:
     """Generates all possible legal moves in chess.
     A move is represented as a string in uci format e.g. e2e4. So there is starting and ending square.
     Move with promotion (e.g. a7a8q) is considered different from a7a8 (non pawn move from the 7th to 8th rank).

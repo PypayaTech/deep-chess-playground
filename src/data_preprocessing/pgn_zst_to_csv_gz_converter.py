@@ -32,7 +32,7 @@ class PgnZstToCsvGzConverter:
                  destination_dir: str,
                  num_games_per_file: int,
                  chunk_size: int = CHUNK_SIZE,
-                 separator: str = ','):
+                 separator: str = ',', validate=True):
         self._pgn_zst_path = pgn_zst_path
         self._destination_dir = destination_dir
         self._num_games_per_file = num_games_per_file
@@ -42,6 +42,7 @@ class PgnZstToCsvGzConverter:
         self._games_queue = Queue(maxsize=GAMES_QUEUE_SIZE)
         self._end_of_data = False
         self._csv_file_counter = 0
+        self.validate = validate
         self._headers = ['Event',
                          'Site',
                          'Date',
@@ -61,7 +62,7 @@ class PgnZstToCsvGzConverter:
                          'WhiteRatingDiff',
                          'Moves']                               
 
-    def convert(self):
+    def convert(self, validate=True):
         """Starts reading and writing threads."""
         read_zst_thread = threading.Thread(target=self._read_zst, args=())
         write_csv_gz_thread = threading.Thread(target=self._write_csv_gz, args=())
@@ -85,14 +86,14 @@ class PgnZstToCsvGzConverter:
             self._chunks_queue.put(None)
 
     @staticmethod
-    def parse_chess_game(stream, validation=False):
+    def parse_chess_game(stream: io.StringIO, validation=True):
         if validation:
-            chess.pgn.read_game(stream)
+            return chess.pgn.read_game(stream)
         
         else:
-            custom_pgn_parser(stream)
+            return custom_pgn_parser(stream)
 
-    def _write_csv_gz(self):
+    def _write_csv_gz(self,):
         """Takes the data from the queue and writes it to the .csv.gz file."""
         two_last_positions = deque([0], maxlen=2)
         remaining_part = ""
@@ -102,13 +103,18 @@ class PgnZstToCsvGzConverter:
             string = remaining_part + data.decode("utf-8")
             stream = io.StringIO(string)
             current_games = []
-            game = self.parse_chess_game(stream)
+            game = self.parse_chess_game(stream, self.validate)
+            data = None
             while game is not None:
-                game_info = [game.headers.get(key, '?') for key in self._headers[:-1]]
-                mainline_moves = " ".join([str(move) for move in game.mainline_moves()])
+                if self.validate:
+                    game_info = [game.headers.get(key, '?') for key in self._headers[:-1]]
+                    mainline_moves = " ".join([str(move) for move in game.mainline_moves()])
+                else:
+                    game_info = [game[key] for key in self._headers[:-1]]
+                    mainline_moves = game["Moves"]
                 current_games.append(game_info + [mainline_moves])
                 two_last_positions.append(stream.tell())
-                game = self.parse_chess_game(stream)
+                game = self.parse_chess_game(stream, self.validate)
             for item in current_games[:-1]:
                 self._games_queue.put(item)
             remaining_part = string[two_last_positions[0]:]
