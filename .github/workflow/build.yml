@@ -3,7 +3,7 @@ name: Build and Tests 3.10
 on:
   push:
     branches:
-      - 'build-CI'
+      - 'main'
 
 jobs:
   build:
