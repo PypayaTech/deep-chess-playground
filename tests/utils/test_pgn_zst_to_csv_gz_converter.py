@@ -13,6 +13,7 @@ def tempdir(request):
     os.makedirs(tempdir_path)
 
     def teardown():
+        pass
         shutil.rmtree(tempdir_path)
 
     request.addfinalizer(teardown)
@@ -33,7 +34,7 @@ def test_files_equal(tempdir, use_comments, num_games):
                           num_games)
     dtg.to_pgn()
     dtg.to_zst()
-    cnv = PgnZstToCsvGzConverter(zst_path, tempdir, num_games)
+    cnv = PgnZstToCsvGzConverter(zst_path, tempdir, num_games, validate=True)
     cnv.convert()
 
     input_file = os.path.join(tempdir, '0.csv.gz')
