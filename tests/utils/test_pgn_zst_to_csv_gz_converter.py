@@ -2,39 +2,25 @@ import pytest
 import os
 import gzip
 import pandas as pd
-import shutil
 from src.data_preprocessing.pgn_zst_to_csv_gz_converter import PgnZstToCsvGzConverter
 from src.utils.example_generator import PgnZstGenerator
-
-
-@pytest.fixture(scope="function")
-def tempdir(request):
-    tempdir_path = os.path.join(os.path.abspath("."), "tempdir")
-    os.makedirs(tempdir_path)
-
-    def teardown():
-        pass
-        shutil.rmtree(tempdir_path)
-
-    request.addfinalizer(teardown)
-
-    return tempdir_path
+from tests.utils.fixtures import tempdir, file_params
 
 
 @pytest.mark.parametrize('use_comments, num_games', [
     (True, 3),
     (False, 3)
 ])
-def test_files_equal(tempdir, use_comments, num_games):
-    zst_path = os.path.join(tempdir, 'example_data.pgn.zst')
-    dtg = PgnZstGenerator(os.path.join(tempdir, 'example_data.csv'),
-                          os.path.join(tempdir, 'example_data.pgn'),
+def test_files_equal(tempdir, file_params, use_comments, num_games):
+    csv_path, zst_path, pgn_path = file_params
+    dtg = PgnZstGenerator(csv_path,
+                          pgn_path,
                           zst_path,
                           use_comments,
                           num_games)
     dtg.to_pgn()
     dtg.to_zst()
-    cnv = PgnZstToCsvGzConverter(zst_path, tempdir, num_games, validate=True)
+    cnv = PgnZstToCsvGzConverter(zst_path, tempdir, num_games)
     cnv.convert()
 
     input_file = os.path.join(tempdir, '0.csv.gz')
