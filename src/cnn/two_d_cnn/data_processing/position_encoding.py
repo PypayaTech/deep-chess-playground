@@ -32,7 +32,9 @@ class PositionEncoder:
                                                                   f'{position.black_queenside_castle}'),
                                   self.encode_en_passant_index(position.en_passant_index),
                                   self.encode_half_moves(position.half_moves),
-                                  self.encode_full_moves(position.full_moves)
+                                  self.encode_full_moves(position.full_moves),
+                                  self.encode_controlled_squares(position.controlled_squares),
+                                  self.encode_pins(position.pins)
                                   ),
                          dim=2)
 
@@ -228,3 +230,76 @@ class PositionEncoder:
             An integer representing the number of full moves.
         """
         return encoded_full_moves[0, 0, 0]
+    
+    @staticmethod
+    def encode_controlled_squares(controlled_squares: list) -> torch.Tensor:
+        """Encodes the controlled squares into a 8x8x12 tensor.
+
+        Args:
+            attacks (list): A list of 12 sets, where the first 6 sets contain the squares attacked by white and the
+                last 6 sets contain the squares attacked by black.
+
+        Returns:
+            torch.Tensor: A 8x8x12 tensor encoding the controlled squares.
+        """
+        encoded_attacks = torch.zeros((8, 8, 12), dtype=torch.float32)
+        for i in range(12):
+            for j in controlled_squares[i]:
+                encoded_attacks[int(j / 8), int(j % 8), i] = 1
+        return encoded_attacks
+    
+    @staticmethod
+    def decode_controlled_squares(encoded_controlled_squares: torch.Tensor) -> list:
+        """Decodes the controlled squares from a 8x8x12 tensor.
+
+        Args:
+            encoded_attacks: A 8x8x12 tensor encoding the controlled squares.
+
+        Returns:
+            A list of 12 sets, where the first 6 sets contain the squares attacked by white and the
+            last 6 sets contain the squares attacked by black.
+        """
+        attacks = [set() for _ in range(12)]
+        for i in range(8):
+            for j in range(8):
+                for k in range(12):
+                    if encoded_controlled_squares[i, j, k] == 1:
+                        attacks[k].add(i * 8 + j)
+        return attacks
+
+    
+    @staticmethod
+    def encode_pins(pins: list) -> torch.Tensor:
+        """Encodes the pins into a 8x8x2 tensor.
+        
+        Args:
+            pins: A list of two sets, where the first set contains the squares pinned by white and the second set
+                contains the squares pinned by black.
+                
+        Returns:
+            A 8x8x2 tensor encoding the pins.
+        """
+        encoded_pins = torch.zeros((8, 8, 2), dtype=torch.float32)
+        for i in range(2):
+            for j in pins[i]:
+                encoded_pins[int(j / 8), int(j % 8), i] = 1
+        return encoded_pins
+    
+    @staticmethod
+    def decode_pins(encoded_pins: torch.Tensor) -> list:
+        """Decodes the pins from a 8x8x2 tensor.
+        
+        Args:
+            encoded_pins: A 8x8x2 tensor encoding the pins.
+            
+        Returns:
+            A list of two sets, where the first set contains the squares pinned by white and the second set
+            contains the squares pinned by black.
+        """
+        pins = [set() for _ in range(2)]
+        for i in range(8):
+            for j in range(8):
+                for k in range(2):
+                    if encoded_pins[i, j, k] == 1:
+                        pins[k].add(i * 8 + j)
+        return pins

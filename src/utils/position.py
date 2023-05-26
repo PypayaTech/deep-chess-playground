@@ -16,7 +16,9 @@ class Position:
             if fen_elements[3] != '-' else None
         self._half_moves = int(fen_elements[4])
         self._full_moves = int(fen_elements[5])
-
+        self._baseBoard = chess.BaseBoard(fen_elements[0])
+        self._controlled_squares, self._pins = self.create_attacks()
+        
     @property
     def fen(self):
         return self._fen
@@ -56,6 +58,14 @@ class Position:
     @property
     def full_moves(self):
         return self._full_moves
+    
+    @property
+    def controlled_squares(self):
+        return self._controlled_squares
+    
+    @property
+    def pins(self):
+        return self._pins
 
     def __str__(self):
         return self.fen
@@ -68,3 +78,18 @@ class Position:
 
     def __ne__(self, other):
         return self.fen != other.fen
+    
+    def create_attacks(self)->tuple:
+        attacks = [set() for _ in range(12)]
+        pins = [set(), set()]
+        for square in range(64):
+            i = self._baseBoard.piece_at(square)
+            piece = i.piece_type - 1 + 6 * (not i.color)
+            if i is not None:
+                attacks[piece].update(self._baseBoard.attacks(square))
+                temp_pins = list(self._baseBoard.pin(i.color, square))
+                if len(temp_pins) != 64:
+                    pins[not i.color].update(temp_pins)
+        return attacks, pins
+    
+        
