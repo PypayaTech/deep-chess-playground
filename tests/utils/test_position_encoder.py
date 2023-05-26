@@ -1,5 +1,4 @@
 import pytest
-# import src.cnn.two_d_cnn.data_processing.position_encoding
 from src.cnn.two_d_cnn.data_processing import position_encoding
 from src.utils.position import Position
 
