@@ -79,13 +79,13 @@ class Position:
     def __ne__(self, other):
         return self.fen != other.fen
     
-    def create_attacks(self)->tuple:
+    def create_attacks(self) -> tuple:
         attacks = [set() for _ in range(12)]
-        pins = [set(), set()]
+        pins = [set() for _ in range(2)]
         for square in range(64):
             i = self._baseBoard.piece_at(square)
-            piece = i.piece_type - 1 + 6 * (not i.color)
             if i is not None:
+                piece = i.piece_type - 1 + 6 * (not i.color)
                 attacks[piece].update(self._baseBoard.attacks(square))
                 temp_pins = list(self._baseBoard.pin(i.color, square))
                 if len(temp_pins) != 64:
