@@ -127,3 +127,12 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# gitignore folder
+gitignore/
+
+# .idea folder
+.idea/
+
+# credentials that should not be commited to a repository
+credentials.py
