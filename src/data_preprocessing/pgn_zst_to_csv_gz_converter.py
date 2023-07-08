@@ -22,17 +22,20 @@ class PgnZstToCsvGzConverter:
             destination_dir (str): Directory where the .csv files will be saved.
             num_games_per_file (int): Maximum number of games per .csv file.
             chunk_size (int): Size of a single read from the source file.
+            separator(str): separator used in .csv files.
         """
 
     def __init__(self,
                  pgn_zst_path: str,
                  destination_dir: str,
                  num_games_per_file: int,
-                 chunk_size: int = CHUNK_SIZE):
+                 chunk_size: int = CHUNK_SIZE,
+                 separator: str = ','):
         self._pgn_zst_path = pgn_zst_path
         self._destination_dir = destination_dir
         self._num_games_per_file = num_games_per_file
         self._chunk_size = chunk_size
+        self._separator = separator
         self._chunks_queue = Queue(maxsize=CHUNKS_QUEUE_SIZE)
         self._games_queue = Queue(maxsize=GAMES_QUEUE_SIZE)
         self._end_of_data = False
@@ -121,6 +124,6 @@ class PgnZstToCsvGzConverter:
         filepath = os.path.join(self._destination_dir, f"{self._csv_file_counter}.csv.gz")
         print(f"Saving games to a file {filepath}.")
         df = pd.DataFrame(games, columns=self._headers)
-        df.to_csv(filepath, index=False, compression="infer")  # , sep='\t'
+        df.to_csv(filepath, index=False, compression="infer", sep=self._separator)
         self._csv_file_counter += 1
         print(f"Games saved to a file {filepath}.")
