@@ -82,6 +82,10 @@ class PgnZstToCsvGzConverter:
             # Put a sentinel value in the queue to signal the end of the data
             self._chunks_queue.put(None)
 
+    @staticmethod
+    def parse_chess_game(stream):
+        return chess.pgn.read_game(stream)
+
     def _write_csv_gz(self):
         """Takes the data from the queue and writes it to the .csv.gz file."""
         two_last_positions = deque([0], maxlen=2)
@@ -92,7 +96,7 @@ class PgnZstToCsvGzConverter:
             string = remaining_part + data.decode("utf-8")
             stream = io.StringIO(string)
             current_games = []
-            game = chess.pgn.read_game(stream)
+            game = self.parse_chess_game(stream)
             while game is not None:
                 game_info = [game.headers.get(key, '?') for key in self._headers[:-1]]
                 mainline_moves = " ".join([str(move) for move in game.mainline_moves()])
