@@ -1,7 +1,21 @@
 # deep-chess-playground
 Experiments with different deep learning techniques to play chess.
 
-## Useful resources
+# Setup
+
+- Download and install Anaconda from the official website: [https://www.anaconda.com/products/distribution](https://www.anaconda.com/products/distribution)
+
+- Open Anaconda Prompt and run the following command to create a virtual environment: `conda create --name <env_name>`
+Replace `<env_name>` with the desired name for your environment.
+
+- Activate the environment using the following command: `conda activate <env_name>`
+
+- Install PyTorch. Follow the instructions at [PyTorch website](https://pytorch.org/get-started/locally/). 
+Choose compute platform (CUDA or CPU).
+
+- After installing PyTorch, you also need to install PyTorch Lightning: `conda install pytorch-lightning -c conda-forge`
+
+# Useful resources
 
 [Neural Networks For Chess](https://github.com/asdfjkl/neural_network_chess)
 
