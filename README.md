@@ -15,11 +15,27 @@ Choose compute platform (CUDA or CPU).
 
 - After installing PyTorch, you also need to install PyTorch Lightning: `conda install pytorch-lightning -c conda-forge`
 
-# Useful resources
+# Projects
 
-## Books
+## AlphaZero
+
+https://www.chessprogramming.org/AlphaZero
+
+https://www.deepmind.com/blog/alphazero-shedding-new-light-on-chess-shogi-and-go
+
+## LeelaZero
+
+https://lczero.org/
+
+https://github.com/LeelaChessZero
+
+https://www.chessprogramming.org/Leela_Chess_Zero
+
+# Books
 
 [Neural Networks For Chess](https://github.com/asdfjkl/neural_network_chess)
+
+# Papers
 
 ## Chess deepfakes
 
