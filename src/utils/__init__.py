@@ -2,7 +2,7 @@ import argparse
 import json
 import os
 
-PROJECT_REAL_PATH = os.path.dirname(os.path.realpath(__file__))[0:-6]
+PROJECT_REAL_PATH = os.path.dirname(os.path.realpath(__file__))[0:-10]
 
 DATA_REAL_PATH = os.path.join(PROJECT_REAL_PATH, "data")
 
