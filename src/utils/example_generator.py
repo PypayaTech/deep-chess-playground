@@ -27,11 +27,11 @@ class PgnZstGenerator:
                  zst_destination_dir: str,
                  comments: bool = False,
                  num_games_per_file: int = 5):
+        self._csv_destination_dir = csv_destination_dir
         self._pgn_destination_dir = pgn_destination_dir
         self._zst_destination_dir = zst_destination_dir
-        self._num_games_per_file = num_games_per_file
-        self._csv_destination_dir = csv_destination_dir
         self._comments = comments
+        self._num_games_per_file = num_games_per_file
         self._headers = ['Event',
                          'Site',
                          'Date',
@@ -123,11 +123,8 @@ class PgnZstGenerator:
 
     def to_zst(self):
         with open(self._pgn_destination_dir, 'rb') as infile:
-            # Create a compressor object
             compressor = zstd.ZstdCompressor()
-            # Compress the input data
             compressed_data = compressor.compress(infile.read())
-
         with open(self._zst_destination_dir, 'wb') as outfile:
             outfile.write(compressed_data)
 
