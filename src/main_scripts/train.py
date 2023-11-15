@@ -30,7 +30,7 @@ def main(args):
     # Create and print the model
     model = ModelFactory.create(config=train_config["model"])
     print(f"Model summary:\n{model}")
-    print(f"Number of parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
+    print(f"Number of trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
 
     # Create some useful callbacks
     early_stopper = EarlyStopping(monitor=train_config["monitor"], patience=train_config["patience"])
