@@ -1,9 +1,44 @@
 # deep-chess-playground
-Experiments with different deep learning techniques to play chess.
 
-# Setup
+Where deep learning meets chess.
 
-- Download and install Anaconda from the official website: [https://www.anaconda.com/products/distribution](https://www.anaconda.com/products/distribution)
+![Chess AI](assets/chessai.jpg)
+
+This repository aims to implement techniques for neural chess engines, providing an in-depth look at the practical application of AI in chess game.
+
+Moreover, it is a comprehensive collection of resources focused on the intersection of Artificial Intelligence (AI) and chess. It includes a wide variety of material such as books, papers, and links to related projects. 
+
+## Table of contents
+
+1. [Play chessbots on lichess](#play-chessbots-on-lichess)
+2. [Run chessbots locally](#run-chessbots-locally)
+    - [Setup](#setup)
+    - [Play](#play)
+3. [Train your own chessbots](#train-your-own-chessbots)
+    - [Data collection](#data-collection)
+    - [Data processing](#data-processing)
+    - [Training](#training)
+4. [Learn about the intersection of chess and AI](#resources)
+    - [Projects](#projects-🛠️)
+        - [AlphaZero](#alphazero)
+        - [LeelaZero](#leelazero)
+    - [Books](#books-📚)
+    - [Papers](#papers-📃)
+        - [Chess deepfakes](#chess-deepfakes)
+        - [Reinforcement learning](#reinforcement-learning)
+        - [Natural language processing](#natural-language-processing)
+        - [Explainability](#explainability)
+        - [Miscellaneous](#miscellaneous)
+
+## Play chessbots on lichess
+
+COMING SOON
+
+## Run chessbots locally
+
+### Setup
+
+- Download and install Anaconda from the official website: [https://www.anaconda.com/products/distribution](https://www.anaconda.com/products/distribution).
 
 - Open Anaconda Prompt and run the following command to create a virtual environment: `conda create --name <env_name>`
 Replace `<env_name>` with the desired name for your environment.
@@ -11,19 +46,39 @@ Replace `<env_name>` with the desired name for your environment.
 - Activate the environment using the following command: `conda activate <env_name>`
 
 - Install PyTorch. Follow the instructions at [PyTorch website](https://pytorch.org/get-started/locally/). 
-Choose compute platform (CUDA or CPU).
+Choose compute platform (CUDA or CPU) depending on whether you have a GPU or not.
 
 - After installing PyTorch, you also need to install PyTorch Lightning: `conda install pytorch-lightning -c conda-forge`
 
-# Projects
+### Play
 
-## AlphaZero
+COMING SOON
+
+## Train your own chessbots
+
+### Data collection
+
+If you need a lot of training data, you can use the [lichess.org open database](https://database.lichess.org/) which has more than 5 000 000 000 games recorded starting from January 2013!
+
+### Data processing
+
+COMING SOON
+
+### Training
+
+COMING SOON
+
+## Resources
+
+### Projects 🛠️
+
+#### AlphaZero
 
 https://www.chessprogramming.org/AlphaZero
 
 https://www.deepmind.com/blog/alphazero-shedding-new-light-on-chess-shogi-and-go
 
-## LeelaZero
+#### LeelaZero
 
 https://lczero.org/
 
@@ -31,13 +86,13 @@ https://github.com/LeelaChessZero
 
 https://www.chessprogramming.org/Leela_Chess_Zero
 
-# Books
+### Books 📚
 
 [Neural Networks For Chess](https://github.com/asdfjkl/neural_network_chess)
 
-# Papers
+### Papers 📃
 
-## Chess deepfakes
+#### Chess deepfakes
 
 [Aligning Superhuman AI with Human Behavior: Chess as a Model System](https://arxiv.org/abs/2006.01855)
 
@@ -45,7 +100,7 @@ https://www.chessprogramming.org/Leela_Chess_Zero
 
 [Style Transfer Generative Adversarial Networks: Learning to Play Chess Differently](https://arxiv.org/abs/1702.06762v1)
 
-## Reinforcement learning
+#### Reinforcement learning
 
 [A general reinforcement learning algorithm that masters chess, shogi, and Go through self-play](https://www.deepmind.com/publications/a-general-reinforcement-learning-algorithm-that-masters-chess-shogi-and-go-through-self-play)
 
@@ -53,7 +108,7 @@ https://www.chessprogramming.org/Leela_Chess_Zero
 
 [Giraffe: Using Deep Reinforcement Learning to Play Chess](https://arxiv.org/abs/1509.01549)
 
-## Natural language processing
+#### Natural language processing
 
 [Chess Q&A : Question Answering on Chess Games](http://multicomp.cs.cmu.edu/wp-content/uploads/2017/09/2015_RAM_cirik_chess.pdf)
 
@@ -71,11 +126,11 @@ https://www.chessprogramming.org/Leela_Chess_Zero
 
 [SentiMATE: Learning to play Chess through Natural Language Processing](https://arxiv.org/abs/1907.08321)
 
-## Explainability
+#### Explainability
 
 [Acquisition of Chess Knowledge in AlphaZero](https://arxiv.org/abs/2111.09259)
 
-## Miscellaneous
+#### Miscellaneous
 
 [Chess AI: Competing Paradigms for Machine Intelligence](https://arxiv.org/abs/2109.11602)
 
