@@ -8,13 +8,14 @@ from queue import Queue
 import zstandard as zstd
 import pandas as pd
 import threading
-
 import re
 from src.data_preprocessing.custom_pgn_parser import custom_pgn_parser
+
 
 CHUNK_SIZE = 1024 * 1024
 CHUNKS_QUEUE_SIZE = 1024
 GAMES_QUEUE_SIZE = 1024 * 1024
+
 
 class PgnZstToCsvGzConverter:
     """Converts compressed .pgn.zst files to compressed .csv.gz files on the fly.
@@ -89,7 +90,6 @@ class PgnZstToCsvGzConverter:
     def parse_chess_game(stream: io.StringIO, validation=True):
         if validation:
             return chess.pgn.read_game(stream)
-        
         else:
             return custom_pgn_parser(stream)
 

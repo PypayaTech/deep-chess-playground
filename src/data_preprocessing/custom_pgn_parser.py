@@ -24,6 +24,7 @@ HEADER_REGEX_dict = {
 MOVE_REGEX = r'(O-O-O|O-O|[QKRBN]?([a-h]|[1-8])?x?[a-h][1-8]([#+]|=[QRBN][+#]?)?|1/2-1/2|1-0|0-1)'
 GAME_REGEX = r'.*?\[Event.*?[^"](1/2-1/2|1-0|0-1|1/2 1/2)'
 
+
 def custom_pgn_parser(stream: io.StringIO) -> dict:
 
     head_pos = stream.tell()

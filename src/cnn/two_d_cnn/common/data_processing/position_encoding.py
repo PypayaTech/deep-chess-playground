@@ -267,7 +267,6 @@ class PositionEncoder:
                         attacks[k].add(i * 8 + j)
         return attacks
 
-    
     @staticmethod
     def encode_pins(pins: list) -> torch.Tensor:
         """Encodes the pins into a 8x8x2 tensor.
