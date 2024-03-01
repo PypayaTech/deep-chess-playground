@@ -236,8 +236,8 @@ class PositionEncoder:
         """Encodes the controlled squares into a 8x8x12 tensor.
 
         Args:
-            attacks (list): A list of 12 sets, where the first 6 sets contain the squares attacked by white and the
-                last 6 sets contain the squares attacked by black.
+            controlled_squares (list): A list of 12 sets, where the first 6 sets contain the squares attacked by white
+            and the last 6 sets contain the squares attacked by black.
 
         Returns:
             torch.Tensor: A 8x8x12 tensor encoding the controlled squares.
@@ -253,7 +253,7 @@ class PositionEncoder:
         """Decodes the controlled squares from a 8x8x12 tensor.
 
         Args:
-            encoded_attacks: A 8x8x12 tensor encoding the controlled squares.
+            encoded_controlled_squares: A 8x8x12 tensor encoding the controlled squares.
 
         Returns:
             A list of 12 sets, where the first 6 sets contain the squares attacked by white and the
