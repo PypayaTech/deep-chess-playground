@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import chess
 import chess.pgn
 import zstandard as zstd
+from src.utils.headers import HEADERS
 
 
 class PgnZstGenerator:
@@ -17,8 +18,6 @@ class PgnZstGenerator:
         zst_destination_dir (str): Directory where the .pgn.zst files will be saved.
         comments (bool): Comments included
         num_games_per_file (int): Number of games
-
-
     """
 
     def __init__(self,
@@ -32,25 +31,6 @@ class PgnZstGenerator:
         self._zst_destination_dir = zst_destination_dir
         self._comments = comments
         self._num_games_per_file = num_games_per_file
-        self._headers = ['Event',
-                         'Site',
-                         'Date',
-                         'Round',
-                         'White',
-                         'Black',
-                         'Result',
-                         'BlackElo',
-                         'BlackRatingDiff',
-                         'ECO',
-                         'Opening',
-                         'Termination',
-                         'TimeControl',
-                         'UTCDate',
-                         'UTCTime',
-                         'WhiteElo',
-                         'WhiteRatingDiff',
-                         'Moves']
-
         self._data = self.__generate_data(num_games_per_file)
 
     def __generate_data(self, games: int) -> pd.DataFrame:
@@ -59,18 +39,23 @@ class PgnZstGenerator:
 
         for i in range(games):
             # Generate random chess game
-            row = [f"Event {i}", 'https://lichess.org/' + ''.join(random.choices(alphabet, k=10)),
+            row = [f"Event {i}",
+                   'https://lichess.org/' + ''.join(random.choices(alphabet, k=10)),
                    (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d'),
                    '-',
                    ''.join(random.choices(alphabet, k=random.randint(1, 20))),
                    ''.join(random.choices(alphabet, k=random.randint(1, 20))),
-                   random.choice(['1-0', '0-1', '1/2 1/2']), random.randint(100, 3000),
+                   random.choice(['1-0', '0-1', '1/2 1/2']),
+                   random.randint(100, 3000),
                    random.randint(-99, 99),
                    ''.join(random.choices(alphabet.upper() + '1234567890', k=3)),
                    ''.join(random.choices(alphabet, k=random.randint(1, 20))),
                    ''.join(random.choices(alphabet, k=random.randint(1, 20))),
-                   f"{random.randint(1, 999)}+{random.randint(1, 9)}", (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d'),
-                   datetime.now().strftime('%H:%M:%S'), random.randint(100, 3000), random.randint(-99, 99)]
+                   f"{random.randint(1, 999)}+{random.randint(1, 9)}",
+                   (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d'),
+                   datetime.now().strftime('%H:%M:%S'),
+                   random.randint(100, 3000),
+                   random.randint(-99, 99)]
 
             board = chess.Board()
             moves = []
@@ -85,7 +70,7 @@ class PgnZstGenerator:
             row.append(moves_str)
             data.append(row)
 
-        return pd.DataFrame(data, columns=self._headers)
+        return pd.DataFrame(data, columns=HEADERS)
 
     # Return generated game as a csv file
     def to_csv(self):

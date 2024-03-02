@@ -1,0 +1,20 @@
+HEADERS = [
+    "Event",
+    "Site",
+    "Date",
+    "Round",
+    "White",
+    "Black",
+    "Result",
+    "BlackElo",
+    "BlackRatingDiff",
+    "ECO",
+    "Opening",
+    "Termination",
+    "TimeControl",
+    "UTCDate",
+    "UTCTime",
+    "WhiteElo",
+    "WhiteRatingDiff",
+    "Moves"
+]
