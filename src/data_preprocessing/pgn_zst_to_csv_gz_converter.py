@@ -9,7 +9,7 @@ import zstandard as zstd
 import pandas as pd
 import threading
 import re
-from src.data_preprocessing.custom_pgn_parser import custom_pgn_parser
+from src.data_preprocessing.pgn_parser import pgn_parser
 
 
 CHUNK_SIZE = 1024 * 1024
@@ -91,7 +91,7 @@ class PgnZstToCsvGzConverter:
         if validation:
             return chess.pgn.read_game(stream)
         else:
-            return custom_pgn_parser(stream)
+            return pgn_parser(stream)
 
     def _write_csv_gz(self,):
         """Takes the data from the queue and writes it to the .csv.gz file."""
