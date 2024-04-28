@@ -1,5 +1,5 @@
 import torch.nn as nn
-from src.cnn.two_d_cnn.position_evaluation_and_move_classification.modelling.simple_modules import ConvolutionalBlock, ResidualBlock
+from src.cnn.two_d_cnn.common.modelling.simple_modules import ConvolutionalBlock, ResidualBlock
 
 
 class ConvolutionalTower:
