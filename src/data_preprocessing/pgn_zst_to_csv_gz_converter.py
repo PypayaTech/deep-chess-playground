@@ -8,8 +8,7 @@ from queue import Queue
 import zstandard as zstd
 import pandas as pd
 import threading
-import re
-from src.data_preprocessing.pgn_parser import pgn_parser
+from src.data_preprocessing.pgn_parser import PGNParser
 from src.utils.headers import HEADERS
 
 
@@ -34,7 +33,8 @@ class PgnZstToCsvGzConverter:
                  destination_dir: str,
                  num_games_per_file: int,
                  chunk_size: int = CHUNK_SIZE,
-                 separator: str = ',', validate=True):
+                 separator: str = ',',
+                 use_python_chess=True):
         self._pgn_zst_path = pgn_zst_path
         self._destination_dir = destination_dir
         self._num_games_per_file = num_games_per_file
@@ -44,8 +44,7 @@ class PgnZstToCsvGzConverter:
         self._games_queue = Queue(maxsize=GAMES_QUEUE_SIZE)
         self._end_of_data = False
         self._csv_file_counter = 0
-        self.validate = validate
-        self._headers = HEADERS
+        self._use_python_chess = use_python_chess
 
     def convert(self):
         """Starts reading and writing threads."""
@@ -70,13 +69,6 @@ class PgnZstToCsvGzConverter:
             # Put a sentinel value in the queue to signal the end of the data
             self._chunks_queue.put(None)
 
-    @staticmethod
-    def parse_chess_game(stream: io.StringIO, validation=True):
-        if validation:
-            return chess.pgn.read_game(stream)
-        else:
-            return pgn_parser(stream)
-
     def _write_csv_gz(self,):
         """Takes the data from the queue and writes it to the .csv.gz file."""
         two_last_positions = deque([0], maxlen=2)
@@ -87,18 +79,13 @@ class PgnZstToCsvGzConverter:
             string = remaining_part + data.decode("utf-8")
             stream = io.StringIO(string)
             current_games = []
-            game = self.parse_chess_game(stream, self.validate)
+            result = PGNParser.parse(stream, self._use_python_chess)
             data = None
-            while game is not None:
-                if self.validate:
-                    game_info = [game.headers.get(key, '?') for key in self._headers[:-1]]
-                    mainline_moves = " ".join([str(move) for move in game.mainline_moves()])
-                else:
-                    game_info = [game[key] for key in self._headers[:-1]]
-                    mainline_moves = game["Moves"]
+            while result is not None:
+                game_info, mainline_moves = result
                 current_games.append(game_info + [mainline_moves])
                 two_last_positions.append(stream.tell())
-                game = self.parse_chess_game(stream, self.validate)
+                result = PGNParser.parse(stream, self._use_python_chess)
             for item in current_games[:-1]:
                 self._games_queue.put(item)
             remaining_part = string[two_last_positions[0]:]
@@ -123,7 +110,7 @@ class PgnZstToCsvGzConverter:
         """Creates dataframe from the list of lists of strings and saves it to the .csv file."""
         filepath = os.path.join(self._destination_dir, f"{self._csv_file_counter}.csv.gz")
         print(f"Saving games to a file {filepath}.")
-        df = pd.DataFrame(games, columns=self._headers)
+        df = pd.DataFrame(games, columns=HEADERS)
         df.to_csv(filepath, index=False, compression="infer", sep=self._separator)
         self._csv_file_counter += 1
         print(f"Games saved to a file {filepath}.")
