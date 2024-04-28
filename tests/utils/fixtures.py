@@ -7,7 +7,7 @@ import os
 def tempdir(request):
     tempdir_path = os.path.join(os.path.abspath("."), "tempdir")
     if not os.path.isdir(tempdir_path):
-    	os.makedirs(tempdir_path)
+        os.makedirs(tempdir_path)
 
     def teardown():
         shutil.rmtree(tempdir_path)
