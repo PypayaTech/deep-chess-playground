@@ -10,6 +10,7 @@ import pandas as pd
 import threading
 import re
 from src.data_preprocessing.pgn_parser import pgn_parser
+from src.utils.headers import HEADERS
 
 
 CHUNK_SIZE = 1024 * 1024
@@ -44,26 +45,9 @@ class PgnZstToCsvGzConverter:
         self._end_of_data = False
         self._csv_file_counter = 0
         self.validate = validate
-        self._headers = ['Event',
-                         'Site',
-                         'Date',
-                         'Round',
-                         'White',
-                         'Black',
-                         'Result',
-                         'BlackElo',
-                         'BlackRatingDiff',
-                         'ECO',
-                         'Opening',
-                         'Termination',
-                         'TimeControl',
-                         'UTCDate',
-                         'UTCTime',
-                         'WhiteElo',
-                         'WhiteRatingDiff',
-                         'Moves']                               
+        self._headers = HEADERS
 
-    def convert(self, validate=True):
+    def convert(self):
         """Starts reading and writing threads."""
         read_zst_thread = threading.Thread(target=self._read_zst, args=())
         write_csv_gz_thread = threading.Thread(target=self._write_csv_gz, args=())
