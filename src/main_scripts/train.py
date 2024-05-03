@@ -4,7 +4,7 @@ import torch
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import EarlyStopping, TQDMProgressBar
 from src.main_scripts.data_module_factory import DataModuleFactory
-from src.main_scripts.model_factory import ModelFactory
+from src.main_scripts.pytorch_module_factory import PyTorchModuleFactory
 from pytorch_lightning.tuner.tuning import Tuner
 from src.utils import parse_configuration_file, read_json
 
@@ -28,7 +28,7 @@ def main(args):
     data_module = DataModuleFactory.create(config=train_config["data_module"])
 
     # Create and print the model
-    model = ModelFactory.create(config=train_config["model"])
+    model = PyTorchModuleFactory.create(config=train_config["model"])
     print(f"Model summary:\n{model}")
     print(f"Number of trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
 
