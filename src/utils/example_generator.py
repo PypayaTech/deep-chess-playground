@@ -31,46 +31,52 @@ class PgnZstGenerator:
         self._zst_destination_dir = zst_destination_dir
         self._comments = comments
         self._num_games_per_file = num_games_per_file
-        self._data = self.__generate_data(num_games_per_file)
+        self._data = self._generate_data(num_games_per_file)
 
-    def __generate_data(self, games: int) -> pd.DataFrame:
+    def _generate_data(self, games: int) -> pd.DataFrame:
         data = []
         alphabet = string.ascii_lowercase
 
         for i in range(games):
-            # Generate random chess game
-            row = [f"Event {i}",
-                   'https://lichess.org/' + ''.join(random.choices(alphabet, k=10)),
-                   (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d'),
-                   '-',
-                   ''.join(random.choices(alphabet, k=random.randint(1, 20))),
-                   ''.join(random.choices(alphabet, k=random.randint(1, 20))),
-                   random.choice(['1-0', '0-1', '1/2 1/2']),
-                   random.randint(100, 3000),
-                   random.randint(-99, 99),
-                   ''.join(random.choices(alphabet.upper() + '1234567890', k=3)),
-                   ''.join(random.choices(alphabet, k=random.randint(1, 20))),
-                   ''.join(random.choices(alphabet, k=random.randint(1, 20))),
-                   f"{random.randint(1, 999)}+{random.randint(1, 9)}",
-                   (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d'),
-                   datetime.now().strftime('%H:%M:%S'),
-                   random.randint(100, 3000),
-                   random.randint(-99, 99)]
-
-            board = chess.Board()
-            moves = []
-
-            for x in range(16):
-                legal_moves = list(board.legal_moves)
-                move = random.choice(legal_moves)
-                moves.append(board.uci(move))
-                board.push(move)
-
-            moves_str = ' '.join(moves)
+            row = self._generate_game_data(i, alphabet)
+            moves_str = self._generate_moves()
             row.append(moves_str)
             data.append(row)
 
         return pd.DataFrame(data, columns=HEADERS)
+
+    def _generate_game_data(self, i: int, alphabet: str) -> list:
+        return [
+            f"Event {i}",
+            'https://lichess.org/' + ''.join(random.choices(alphabet, k=10)),
+            (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d'),
+            '-',
+            ''.join(random.choices(alphabet, k=random.randint(1, 20))),
+            ''.join(random.choices(alphabet, k=random.randint(1, 20))),
+            random.choice(['1-0', '0-1', '1/2 1/2']),
+            random.randint(100, 3000),
+            random.randint(-99, 99),
+            ''.join(random.choices(alphabet.upper() + '1234567890', k=3)),
+            ''.join(random.choices(alphabet, k=random.randint(1, 20))),
+            ''.join(random.choices(alphabet, k=random.randint(1, 20))),
+            f"{random.randint(1, 999)}+{random.randint(1, 9)}",
+            (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d'),
+            datetime.now().strftime('%H:%M:%S'),
+            random.randint(100, 3000),
+            random.randint(-99, 99)
+        ]
+
+    def _generate_moves(self) -> str:
+        board = chess.Board()
+        moves = []
+
+        for _ in range(16):
+            legal_moves = list(board.legal_moves)
+            move = random.choice(legal_moves)
+            moves.append(board.uci(move))
+            board.push(move)
+
+        return ' '.join(moves)
 
     # Return generated game as a csv file
     def to_csv(self):
@@ -92,19 +98,20 @@ class PgnZstGenerator:
             for move in move_list:
                 node = node.add_variation(chess.Move.from_uci(move))
                 if self._comments:
-                    score = round(random.uniform(-1, 1), 2)
-                    hour = random.randint(0, 9)
-                    minute = random.randint(0, 59)
-                    second = random.randint(0, 59)
-
-                    node.comment = f"[%eval {score}] [%clk {hour}:{minute:02d}:{second:02d}]"
+                    node.comment = self._generate_comment()
 
             pgn_list.append(str(game))
 
         pgn_str = "\n\n".join(pgn_list)
-        # print(pgn_str)
         with open(self._pgn_destination_dir, 'w') as file:
             file.write(pgn_str)
+
+    def _generate_comment(self) -> str:
+        score = round(random.uniform(-1, 1), 2)
+        hour = random.randint(0, 9)
+        minute = random.randint(0, 59)
+        second = random.randint(0, 59)
+        return f"[%eval {score}] [%clk {hour}:{minute:02d}:{second:02d}]"
 
     def to_zst(self):
         with open(self._pgn_destination_dir, 'rb') as infile:
