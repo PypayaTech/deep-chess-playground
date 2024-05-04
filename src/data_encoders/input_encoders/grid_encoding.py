@@ -20,7 +20,7 @@ PIECE_CHANNEL_DICT = {
 }
 
 
-class PositionEncoder:
+class GridEncoder:
     """A class used to encode chess positions."""
     def encode_position(self, position: Position) -> torch.Tensor:
         """Concatenates all the planes (piece placement, who's turn, castling privileges etc.) in to one."""

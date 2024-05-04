@@ -1,5 +1,5 @@
 import pytest
-from src.cnn.two_d_cnn.common.data_processing import position_encoding
+from src.data_encoders.input_encoders import grid_encoding
 from src.utils.position import Position
 
 
@@ -10,7 +10,7 @@ from src.utils.position import Position
 ])
 def test_controlled_squares_encoding_decoding(fen):
     position = Position(fen)
-    encoder = position_encoding.PositionEncoder()
+    encoder = position_encoding.GridEncoder()
     encoded = encoder.encode_controlled_squares(position.controlled_squares)
     decoded = encoder.decode_controlled_squares(encoded)
     assert position.controlled_squares == decoded
@@ -23,7 +23,7 @@ def test_controlled_squares_encoding_decoding(fen):
 ])
 def test_pin_encoding_decoding(fen):
     position = Position(fen)
-    encoder = position_encoding.PositionEncoder()
+    encoder = position_encoding.GridEncoder()
     encoded = encoder.encode_pins(position.pins)
     decoded = encoder.decode_pins(encoded)
     assert position.pins == decoded
