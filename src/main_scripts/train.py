@@ -4,7 +4,7 @@ import torch
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import EarlyStopping, TQDMProgressBar
 from src.main_scripts.data_module_factory import DataModuleFactory
-from src.main_scripts.pytorch_module_factory import PyTorchModuleFactory
+from src.lightning_modules.lightning_module_factory import LightningModuleFactory
 from pytorch_lightning.tuner.tuning import Tuner
 from src.utils import parse_configuration_file, read_json
 
@@ -27,10 +27,10 @@ def main(args):
     # Create the data module
     data_module = DataModuleFactory.create(config=train_config["data_module"])
 
-    # Create and print the model
-    model = PyTorchModuleFactory.create(config=train_config["model"])
-    print(f"Model summary:\n{model}")
-    print(f"Number of trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
+    # Create and print the module
+    module = LightningModuleFactory.build_module(config=train_config["module"])
+    print(f"Model summary:\n{module}")
+    print(f"Number of trainable parameters: {sum(p.numel() for p in module.parameters() if p.requires_grad)}")
 
     # Create some useful callbacks
     early_stopper = EarlyStopping(monitor=train_config["monitor"], patience=train_config["patience"])
@@ -46,10 +46,10 @@ def main(args):
     tuner = Tuner(trainer)
 
     # Find maximum batch size
-    tuner.scale_batch_size(model, data_module)
+    tuner.scale_batch_size(module, data_module)
 
     # Find good learning rate
-    lr_finder = tuner.lr_find(model, data_module)
+    lr_finder = tuner.lr_find(module, data_module)
 
     # Get the suggestion
     suggestion = lr_finder.suggestion()
@@ -60,10 +60,10 @@ def main(args):
     print(f"Suggestion = {suggestion}")
 
     # Pick point based on plot, or get suggestion
-    model.hparams.lr = suggestion
+    module.hparams.lr = suggestion
 
-    # Train model
-    trainer.fit(model, data_module, ckpt_path=train_config["checkpoint_path"])
+    # Train module
+    trainer.fit(module, data_module, ckpt_path=train_config["checkpoint_path"])
 
 
 if __name__ == "__main__":

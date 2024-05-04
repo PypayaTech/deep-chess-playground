@@ -2,8 +2,8 @@ import pytest
 import os
 import gzip
 import pandas as pd
-from src.data_preprocessing.pgn_zst_to_csv_gz_converter import PgnZstToCsvGzConverter
-from src.utils.example_generator import PgnZstGenerator
+from src.utils.pgn_zst_to_csv_gz_converter import PgnZstToCsvGzConverter
+from src.dummy_generators.pgn_zst_generator import PgnZstGenerator
 from tests.utils.fixtures import tempdir, file_params
 
 

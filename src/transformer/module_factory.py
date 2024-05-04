@@ -1,6 +1,0 @@
-
-
-class TransformerModuleFactory:
-    @staticmethod
-    def create(config: dict[str, str]):
-        pass

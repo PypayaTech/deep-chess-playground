@@ -15,7 +15,7 @@ Moreover, it is a comprehensive collection of resources focused on the intersect
     - [Setup](#setup)
     - [Play](#play)
 3. [Train your own chessbots](#train-your-own-chessbots)
-    - [Data collection](#data-collection)
+    - [Data loading](#data-loading)
     - [Data processing](#data-processing)
     - [Training](#training)
 4. [Learn about the intersection of chess and AI](#resources)
@@ -56,7 +56,11 @@ COMING SOON
 
 ## Train your own chessbots
 
-### Data collection
+### Data loading
+
+<p align="center">
+  <img src="assets/data_loading.png" alt="Data loading"/>
+</p>
 
 If you need a lot of training data, you can use the [lichess.org open database](https://database.lichess.org/) which has more than 5 000 000 000 games recorded starting from January 2013!
 
