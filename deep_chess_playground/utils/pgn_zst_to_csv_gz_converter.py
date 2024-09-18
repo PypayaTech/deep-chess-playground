@@ -24,21 +24,45 @@ logging.basicConfig(filename='pgn_zst_to_csv_gz_converter.log', level=logging.IN
 class PgnZstToCsvGzConverter:
     """Converts compressed .pgn.zst files to compressed .csv.gz files on the fly.
 
-        Args:
-            pgn_zst_path (str): Path to the .pgn.zst file.
-            destination_dir (str): Directory where the .csv files will be saved.
-            num_games_per_file (int): Maximum number of games per .csv file.
-            chunk_size (int): Size of a single read from the source file.
-            separator(str): separator used in .csv files.
-        """
+    Args:
+        pgn_zst_path (str): Path to the .pgn.zst file.
+        destination_dir (str): Directory where the .csv files will be saved.
+        num_games_per_file (int): Maximum number of games per .csv file.
+        chunk_size (int): Size of a single read from the source file.
+        separator (str): Separator used in .csv files.
 
+    Attributes:
+        _pgn_zst_path (str): Path to the input .pgn.zst file.
+        _destination_dir (str): Directory where output .csv files are saved.
+        _num_games_per_file (int): Maximum number of games per .csv file.
+        _chunk_size (int): Size of a single read from the source file.
+        _separator (str): Separator used in .csv files.
+        _chunks_queue (Queue): Queue for storing file chunks.
+        _games_queue (Queue): Queue for storing parsed games.
+        _end_of_data (bool): Flag indicating end of input data.
+        _csv_file_counter (int): Counter for generated CSV files.
+        _parser (PGNParser): Parser object for PGN data.
+
+    Raises:
+        FileNotFoundError: If the input file or destination directory doesn't exist.
+        PermissionError: If there's no write permission for the destination directory.
+        ValueError: If the input file is empty.
+    """
     def __init__(self,
                  pgn_zst_path: str,
                  destination_dir: str,
                  num_games_per_file: int,
                  chunk_size: int = CHUNK_SIZE,
-                 separator: str = ',',
-                 use_python_chess=True):
+                 separator: str = ','):
+        if not os.path.exists(pgn_zst_path):
+            raise FileNotFoundError(f"Input file not found: {pgn_zst_path}")
+        if not os.path.exists(destination_dir):
+            raise FileNotFoundError(f"Destination directory not found: {destination_dir}")
+        if not os.access(destination_dir, os.W_OK):
+            raise PermissionError(f"No write permission for destination directory: {destination_dir}")
+        if os.path.getsize(pgn_zst_path) == 0:
+            raise ValueError(f"Input file is empty: {pgn_zst_path}")
+
         self._pgn_zst_path = pgn_zst_path
         self._destination_dir = destination_dir
         self._num_games_per_file = num_games_per_file
@@ -48,40 +72,52 @@ class PgnZstToCsvGzConverter:
         self._games_queue = Queue(maxsize=GAMES_QUEUE_SIZE)
         self._end_of_data = False
         self._csv_file_counter = 0
-        self._use_python_chess = use_python_chess
         self._parser = PGNParser()
         logging.info(f"Initialized PgnZstToCsvGzConverter with file: {pgn_zst_path}")
 
     def convert(self):
-        """Starts reading and writing threads."""
+        """Starts reading and writing threads.
+
+        Raises:
+            RuntimeError: If an error occurs during the conversion process.
+        """
         logging.info("Starting conversion process")
-        read_zst_thread = threading.Thread(target=self._read_zst, args=())
-        write_csv_gz_thread = threading.Thread(target=self._write_csv_gz, args=())
-        write_games_thread = threading.Thread(target=self._write_games, args=())
-        read_zst_thread.start()
-        write_csv_gz_thread.start()
-        write_games_thread.start()
-        read_zst_thread.join()
-        write_csv_gz_thread.join()
-        write_games_thread.join()
-        logging.info("Conversion process completed")
+        try:
+            read_zst_thread = threading.Thread(target=self._read_zst, args=())
+            write_csv_gz_thread = threading.Thread(target=self._write_csv_gz, args=())
+            write_games_thread = threading.Thread(target=self._write_games, args=())
+            read_zst_thread.start()
+            write_csv_gz_thread.start()
+            write_games_thread.start()
+            read_zst_thread.join()
+            write_csv_gz_thread.join()
+            write_games_thread.join()
+            logging.info("Conversion process completed")
+        except Exception as e:
+            logging.error(f"Error during conversion process: {e}")
+            raise RuntimeError(f"Conversion process failed: {e}")
 
     def _read_zst(self):
         """Reads data from the .pgn.zst file and adds it to the chunks queue."""
         logging.info(f"Starting to read {self._pgn_zst_path}")
-        with open(self._pgn_zst_path, 'rb') as f:
-            reader = zstd.ZstdDecompressor().stream_reader(f)
-            chunk = reader.read(self._chunk_size)
-            chunks_read = 0
-            while chunk:
-                self._chunks_queue.put(chunk)
+        try:
+            with open(self._pgn_zst_path, 'rb') as f:
+                reader = zstd.ZstdDecompressor().stream_reader(f)
                 chunk = reader.read(self._chunk_size)
-                chunks_read += 1
-                if chunks_read % 100 == 0:
-                    logging.info(f"Read {chunks_read} chunks")
-            # Put a sentinel value in the queue to signal the end of the data
+                chunks_read = 0
+                while chunk:
+                    self._chunks_queue.put(chunk)
+                    chunk = reader.read(self._chunk_size)
+                    chunks_read += 1
+                    if chunks_read % 100 == 0:
+                        logging.info(f"Read {chunks_read} chunks")
+                # Put a sentinel value in the queue to signal the end of the data
+                self._chunks_queue.put(None)
+            logging.info(f"Finished reading {self._pgn_zst_path}")
+        except Exception as e:
+            logging.error(f"Error reading input file: {e}")
             self._chunks_queue.put(None)
-        logging.info(f"Finished reading {self._pgn_zst_path}")
+            raise
 
     def _write_csv_gz(self,):
         """Takes the data from the queue and writes it to the .csv.gz file."""
@@ -131,9 +167,17 @@ class PgnZstToCsvGzConverter:
 
     def _save_games_on_disk(self, games: List[str]):
         """Creates dataframe from the list of lists of strings and saves it to the .csv file."""
+        if not games:
+            logging.info("No games to save, skipping file creation")
+            return
+
         filepath = os.path.join(self._destination_dir, f"{self._csv_file_counter}.csv.gz")
         logging.info(f"Saving games to file {filepath}")
-        df = pd.DataFrame(games, columns=HEADERS)
-        df.to_csv(filepath, index=False, compression="infer", sep=self._separator)
-        self._csv_file_counter += 1
-        logging.info(f"Games saved to file {filepath}")
+        try:
+            df = pd.DataFrame(games, columns=HEADERS)
+            df.to_csv(filepath, index=False, compression="infer", sep=self._separator)
+            self._csv_file_counter += 1
+            logging.info(f"Games saved to file {filepath}")
+        except Exception as e:
+            logging.error(f"Error saving games to file: {e}")
+            raise
