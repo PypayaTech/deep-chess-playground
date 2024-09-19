@@ -41,6 +41,27 @@ def output_dir():
         yield temp_dir
 
 
+@pytest.fixture
+def example_pgn_zst_file(tmp_path):
+    # Path to your example.pgn file in the tests/data directory
+    example_pgn_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'example.pgn')
+
+    # Create a temporary .pgn.zst file
+    temp_zst_path = tmp_path / "example.pgn.zst"
+
+    # Read the content of example.pgn and compress it
+    with open(example_pgn_path, 'rb') as f:
+        content = f.read()
+
+    compressed = zstd.compress(content)
+
+    # Write the compressed content to the temporary .pgn.zst file
+    with open(temp_zst_path, 'wb') as f:
+        f.write(compressed)
+
+    return str(temp_zst_path)
+
+
 def test_pgn_zst_to_csv_gz_conversion(sample_pgn_zst_file, output_dir):
     converter = PgnZstToCsvGzConverter(
         pgn_zst_path=sample_pgn_zst_file,
@@ -113,3 +134,42 @@ def test_large_num_games_per_file(sample_pgn_zst_file, output_dir):
 
     output_files = os.listdir(output_dir)
     assert len(output_files) == 1  # Should create only one file
+
+
+def test_example_pgn_conversion(example_pgn_zst_file, output_dir):
+    converter = PgnZstToCsvGzConverter(
+        pgn_zst_path=example_pgn_zst_file,
+        destination_dir=output_dir,
+        num_games_per_file=100  # Adjust this as needed
+    )
+    converter.convert()
+
+    # Check if the output files were created
+    output_files = sorted(os.listdir(output_dir))
+    assert len(output_files) > 0
+    assert all(file.endswith('.csv.gz') for file in output_files)
+
+    # Read all output files and concatenate them
+    dfs = []
+    for file in output_files:
+        df = pd.read_csv(os.path.join(output_dir, file), compression='gzip')
+        dfs.append(df)
+
+    combined_df = pd.concat(dfs, ignore_index=True)
+
+    # Check if we have the expected number of games
+    assert len(combined_df) == 54
+
+    # Check if the DataFrame has the expected columns
+    expected_columns = ['Event', 'Site', 'Date', 'Round', 'White', 'Black', 'Result', 'Moves']
+    assert all(col in combined_df.columns for col in expected_columns)
+
+    # Check some known values from the games:
+    assert combined_df.loc[1, 'Event'] == 'Rated Bullet tournament https://lichess.org/tournament/yc1WW2Ox'
+    assert combined_df.loc[1, 'White'] == 'Abbot'
+
+    # Check that all games have moves
+    assert combined_df['Moves'].notna().all()
+
+    # Check that all games have a valid result
+    assert combined_df['Result'].isin(['1-0', '0-1', '1/2-1/2', '*']).all()
