@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "deep-chess-playground"
-version = "0.0.2"
+version = "0.0.3"
 description = "Where deep learning meets chess"
 authors = ["PypayaTech"]
 license = "MIT"
