@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "deep-chess-playground"
-version = "0.0.3"
+version = "0.0.4"
 description = "Where deep learning meets chess"
 authors = ["PypayaTech"]
 license = "MIT"
@@ -23,7 +23,7 @@ chess = "^1.10.0"
 pypaya-pgn-parser = "^0.1.0"
 pypaya-python-tools = "^1.1.0"
 pandas = "^2.0.0"
-numpy = "^2.0.0"
+numpy = "^1.10.0"
 zstandard = "^0.23.0"
 
 [build-system]
